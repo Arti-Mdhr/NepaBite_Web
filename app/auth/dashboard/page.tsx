@@ -8,13 +8,13 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-6 bg-white rounded-xl shadow">
-          🔍 Search Recipes
+           Search Recipes
         </div>
         <div className="p-6 bg-white rounded-xl shadow">
-          ❤️ Saved Recipes
+           Saved Recipes
         </div>
         <div className="p-6 bg-white rounded-xl shadow">
-          👩‍🍳 My Profile
+           My Profile
         </div>
       </div>
     </div>
