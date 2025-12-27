@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RecipeFinder",
-  description: "Find recipes, create grocery lists, and locate nearby marts",
+  title: "Nepabite",
+  description: "Recipe finder app",
 };
 
 export default function RootLayout({
@@ -13,9 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased font-serif bg-white">
-        {children}
-      </body>
+      <body className="bg-white antialiased font-serif">{children}</body>
     </html>
   );
 }
