@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { title: "Chatamari", image: "/images/chatamari.jpg" },
+            { title: "Chatamari", image: "/images/chataamari.jpg" },
             { title: "Bara", image: "/images/bara.jpg" },
             { title: "Yomari", image: "/images/yomari.png" },
           ].map((recipe) => (

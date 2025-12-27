@@ -75,7 +75,7 @@ export default function LandingPage() {
     {[ 
       {
         title: "Chatamari",
-        image: "/images/chatamari.jpg",
+        image: "/images/chataamari.jpg",
       },
       {
         title: "Bara",
