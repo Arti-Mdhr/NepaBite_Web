@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white flex flex-col">
-      {/* Navbar */}
+    
       <header className="flex items-center justify-between px-10 py-6">
         <div className="flex items-center gap-3">
           <Image src="/images/logo.png" alt="NepaBite" width={40} height={40} />
@@ -27,7 +27,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
+    
       <section className="flex flex-1 items-center justify-between px-20">
         <div className="max-w-xl">
           <h1 className="text-5xl font-bold leading-tight text-gray-900">
