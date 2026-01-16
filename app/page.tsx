@@ -1,95 +1,65 @@
-import Link from "next/link";
+import Image from "next/image";
 
-const recipes = [
-  { title: "Chatamari", time: "15 Mins", rating: "4.5" },
-  { title: "Bara", time: "15 Mins", rating: "4.5" },
-  { title: "Yomari", time: "15 Mins", rating: "4.5" },
-];
-
-export default function LandingPage() {
+export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <header className="flex items-center justify-between px-10 py-5 border-b">
-
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
-            N
-          </div>
-          <span className="text-xl font-bold text-gray-900">NepaBite</span>
-        </div>
-        <div className="flex-1 mx-10">
-          <input
-            type="text"
-            placeholder="Search Recipes..."
-            className="w-full max-w-lg px-5 py-2 border rounded-full focus:ring-2 focus:ring-green-500 outline-none"
-          />
-        </div>
-        <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
-          <Link href="/login">Log In</Link>
-          <Link href="#">Recipes</Link>
-          <Link href="#">Categories</Link>
-          <Link href="#">Cart</Link>
-          <Link href="#">Saved Recipes</Link>
-        </nav>
-      </header>
-      <section className="px-10 py-16 bg-gray-50">
-        <div className="max-w-3xl">
-          <h1 className="text-4xl font-bold text-gray-900 leading-tight">
-            Discover Authentic Nepali Recipes
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+        <Image
+          className="dark:invert"
+          src="/next.svg"
+          alt="Next.js logo"
+          width={100}
+          height={20}
+          priority
+        />
+        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
+          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+            To get started, edit the page.tsx file.
           </h1>
-          <p className="mt-4 text-gray-600 text-lg">
-            Explore, cook, and save traditional Nepali dishes from all over Nepal.
+          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+            Looking for a starting point or more instructions? Head over to{" "}
+            <a
+              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              className="font-medium text-zinc-950 dark:text-zinc-50"
+            >
+              Templates
+            </a>{" "}
+            or the{" "}
+            <a
+              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              className="font-medium text-zinc-950 dark:text-zinc-50"
+            >
+              Learning
+            </a>{" "}
+            center.
           </p>
-
-          <div className="mt-8 space-x-4">
-            <Link
-              href="/login"
-              className="px-7 py-3 bg-green-600 text-white rounded-full text-base font-medium"
-            >
-              Get Started
-            </Link>
-            <Link
-              href="/register"
-              className="px-7 py-3 border border-gray-300 rounded-full text-base font-medium"
-            >
-              Create Account
-            </Link>
-          </div>
         </div>
-      </section>
-      <section className="px-10 py-12">
-        <h2 className="text-2xl font-bold mb-8 text-gray-900">
-          What We’re Loving Right Now
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {recipes.map((recipe) => (
-            <div
-              key={recipe.title}
-              className="border rounded-xl p-6 hover:shadow-md transition cursor-pointer"
-            >
-              <div className="w-full h-36 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
-                Recipe Image
-              </div>
-              <div className="mt-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">
-                    {recipe.title}
-                  </h3>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">
-                    ⭐ {recipe.rating}
-                  </span>
-                </div>
-
-                <p className="text-sm text-gray-500 mt-2">Time</p>
-                <p className="text-sm font-medium text-gray-800">
-                  {recipe.time}
-                </p>
-              </div>
-            </div>
-          ))}
+        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+          <a
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
+            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className="dark:invert"
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={16}
+              height={16}
+            />
+            Deploy Now
+          </a>
+          <a
+            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </a>
         </div>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
