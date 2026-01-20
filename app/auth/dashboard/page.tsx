@@ -1,13 +1,26 @@
+"use client";
+
+import Cookies from 'js-cookie';
+import {  useEffect, useState } from "react";
+
 export default function DashboardPage() {
+  const [name, setName] = useState<string>(""); // default empty
+
+  useEffect(() => {
+    // Read username from cookie
+    const username = Cookies.get("username"); // change key if you stored differently
+    if (username) setName(username);
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navbar */}
       <header className="bg-white shadow-sm px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
-            N
+            AB
           </div>
           <span className="font-semibold text-lg text-black">NepaBite</span>
+          <p className="text-gray-700 font-medium">Hello {name}</p>
         </div>
 
         <div className="flex items-center gap-6 text-sm text-black">
