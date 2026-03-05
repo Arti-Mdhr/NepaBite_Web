@@ -1,24 +1,8 @@
-//backend api call only 
-import axiosInstance from "./axios";
-import axios from "./axios";
-import { API } from "./endpoints";
+import { apiFetch } from "@/lib/api";
 
-export const registerUser= async(registerData: any)=>{
-    try{
-        const response= await axiosInstance.post(
-            API.USER.RESGISTER, //BACKEND route path
-            registerData
-        );
-        return response.data;
-    }catch(err: Error | any){
-        throw new Error
-        {
-            err.response?.data?.message 
-            || err.message 
-            || "Registration failed"
-        };
-    }
-}
-
-
-
+export const registerUser = async (registerData: any) => {
+  return await apiFetch("/api/auth/register", {
+    method: "POST",
+    body: registerData,  
+  });
+};
