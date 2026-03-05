@@ -12,33 +12,40 @@ export default function FoodCard(props: {
   return (
     <Link
       href={`/recipes/${id}`}
-      className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300"
+      className="group block bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition duration-300"
     >
       <div className="relative overflow-hidden">
+
         <img
           src={image || "/images/img1.jpg"}
           alt={name}
-          className="h-52 w-full object-cover group-hover:scale-105 transition duration-300"
+          className="h-56 w-full object-cover group-hover:scale-105 transition duration-300"
         />
 
-        <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-xs shadow">
+        {/* Rating */}
+        <div className="absolute top-3 right-3 bg-black px-3 py-1 rounded-full text-xs font-semibold shadow">
           ⭐ {rating}
         </div>
       </div>
 
       <div className="p-5">
-        <h3 className="text-lg font-semibold text-gray-900 capitalize">
+
+        <h3 className="text-lg font-semibold text-gray-900 capitalize line-clamp-2">
           {name}
         </h3>
+{/* 
+        <div className="flex justify-between items-center mt-4 text-sm">
 
-        <div className="flex justify-between items-center mt-3 text-sm text-gray-500">
-          <span>⏱ {time}</span>
+          <span className="text-gray-500">
+            ⏱ {time} */}
+          {/* </span> */}
 
-          <span className="text-red-500 font-medium">
+          <span className="text-green-600 font-semibold group-hover:underline">
             View Recipe →
           </span>
+
         </div>
-      </div>
+      {/* </div> */}
     </Link>
   );
 }

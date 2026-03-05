@@ -20,9 +20,6 @@ export default function SavedRecipesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ===============================
-  // FETCH SAVED RECIPES
-  // ===============================
   const fetchSavedRecipes = async () => {
     try {
       const token = Cookies.get("token");
@@ -51,9 +48,6 @@ export default function SavedRecipesPage() {
     }
   };
 
-  // ===============================
-  // REMOVE SAVED RECIPE
-  // ===============================
   const removeSavedRecipe = async (recipeId: string) => {
     try {
       await apiFetch(`/api/saved-recipes/remove/${recipeId}`, {
@@ -79,20 +73,16 @@ export default function SavedRecipesPage() {
     fetchSavedRecipes();
   }, []);
 
-  // ===============================
-  // LOADING STATE
-  // ===============================
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Loading saved recipes...</p>
+        <p className="text-gray-600 text-lg">
+          Loading saved recipes...
+        </p>
       </div>
     );
   }
 
-  // ===============================
-  // ERROR STATE
-  // ===============================
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,59 +92,85 @@ export default function SavedRecipesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 px-8 py-10">
-      <h1 className="text-3xl font-bold text-gray-900">
-        Saved Recipes
-      </h1>
+    <div className="min-h-screen bg-white">
 
-      {recipes.length === 0 ? (
-        <p className="mt-6 text-gray-600">
-          No saved recipes yet.
-        </p>
-      ) : (
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {recipes.map((recipe) => (
-            <div
-              key={recipe._id}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
+      <div className="max-w-7xl mx-auto px-6 py-12">
+
+        <h1 className="text-3xl font-bold text-black">
+          Saved Recipes
+        </h1>
+
+        {recipes.length === 0 ? (
+
+          <div className="mt-10 text-center">
+            <p className="text-gray-600">
+              You haven't saved any recipes yet.
+            </p>
+
+            <Link
+              href="/recipes"
+              className="inline-block mt-4 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
             >
-              <Link href={`/recipes/${recipe._id}`}>
-                <img
-                  src={
-                    recipe.image
-                      ? resolveImageUrl(recipe.image)
-                      : "/images/img1.jpg"
-                  }
-                  alt={recipe.title}
-                  className="w-full h-44 object-cover"
-                />
-              </Link>
+              Browse Recipes
+            </Link>
+          </div>
 
-              <div className="p-4">
+        ) : (
+
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+            {recipes.map((recipe) => (
+
+              <div
+                key={recipe._id}
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition"
+              >
+
                 <Link href={`/recipes/${recipe._id}`}>
-                  <h2 className="text-lg font-semibold text-gray-900 hover:text-green-600">
-                    {recipe.title}
-                  </h2>
+                  <img
+                    src={
+                      recipe.image
+                        ? resolveImageUrl(recipe.image)
+                        : "/images/img1.jpg"
+                    }
+                    alt={recipe.title}
+                    className="w-full h-48 object-cover"
+                  />
                 </Link>
 
-                {recipe.description && (
-                  <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                    {recipe.description}
-                  </p>
-                )}
+                <div className="p-5">
 
-                {/* REMOVE BUTTON */}
-                <button
-                  onClick={() => removeSavedRecipe(recipe._id)}
-                  className="mt-4 w-full bg-red-100 text-red-600 py-2 rounded-lg hover:bg-red-200 transition"
-                >
-                  Remove
-                </button>
+                  <Link href={`/recipes/${recipe._id}`}>
+                    <h2 className="text-lg font-semibold text-black hover:text-green-600">
+                      {recipe.title}
+                    </h2>
+                  </Link>
+
+                  {recipe.description && (
+                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                      {recipe.description}
+                    </p>
+                  )}
+
+                  <button
+                    onClick={() => removeSavedRecipe(recipe._id)}
+                    className="mt-5 w-full border border-red-300 text-red-600 py-2 rounded-lg hover:bg-red-50 transition"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+
+            ))}
+
+          </div>
+
+        )}
+
+      </div>
+
     </div>
   );
 }

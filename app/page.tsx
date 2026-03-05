@@ -1,9 +1,11 @@
-import Image from "next/image";
-import HomePage from "./(public)/page";
-export default function Home() {
+import Header from "./(public)/_components/Header";
+import Hero from "./(public)/_components/Hero";
+
+export default function HomePage() {
   return (
-    <div>      
-       <HomePage />
+    <div>
+      <Header />
+      <Hero />
     </div>
   );
 }

@@ -9,7 +9,7 @@ type Recipe = {
   _id: string;
   title: string;
   cookTime?: string;
-  rating?: number;
+  averageRating?: number;
   image?: string;
 };
 
@@ -33,25 +33,31 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
+
       <Hero />
 
-      <section className="px-8 mt-12">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-          What We’re Loving Right Now
-        </h2>
+      <section className="max-w-7xl mx-auto px-6 py-16">
+
+        <div className="flex items-center justify-between mb-10">
+          <h2 className="text-3xl font-bold text-gray-900">
+            What We're Loving Right Now
+          </h2>
+        </div>
 
         {loading ? (
-          <div className="text-gray-600">Loading recipes...</div>
+          <div className="text-center text-gray-500 text-lg">
+            Loading recipes...
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {recipes.map((r) => (
               <FoodCard
                 key={r._id}
                 id={r._id}
                 name={r.title}
                 time={r.cookTime || "—"}
-                rating={String(r.rating ?? "—")}
+                rating={String(r.averageRating ?? "—")}
                 image={resolveImageUrl(r.image)}
               />
             ))}

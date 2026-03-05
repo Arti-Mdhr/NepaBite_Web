@@ -14,11 +14,13 @@ interface ApiUser {
   role: Role;
   createdAt?: string;
   updatedAt?: string;
-
   phoneNumber?: string;
   address?: string;
   image?: string;
 }
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5050";
 
 export default function AdminUserEditPage() {
   const params = useParams();
@@ -27,7 +29,7 @@ export default function AdminUserEditPage() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
   const [user, setUser] = useState<ApiUser | null>(null);
 
@@ -35,57 +37,45 @@ export default function AdminUserEditPage() {
     fullName: "",
     email: "",
     role: "user" as Role,
-    password: "", // optional
+    password: "",
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imagePreview, setImagePreview] = useState("");
 
-  const isMongoId = (id: string) => /^[a-f\d]{24}$/i.test(id);
-  const API_BASE = "http://localhost:5050";
+  const token = Cookies.get("token");
+
   const resolveImageUrl = (src?: string) => {
     if (!src) return "";
-    if (src.startsWith("http") || src.startsWith("data:") || src.startsWith("blob:")) return src;
+    if (src.startsWith("http") || src.startsWith("data:") || src.startsWith("blob:"))
+      return src;
     return `${API_BASE}${src}`;
   };
 
-  // ✅ Fetch user
+  const isMongoId = (id: string) => /^[a-f\d]{24}$/i.test(id);
+
   useEffect(() => {
-    if (!userId) return;
-
     if (!isMongoId(userId)) {
-      setError("Invalid user id in URL.");
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    const token = Cookies.get("token");
-    if (!token) {
-      setError("No token found. Please login again.");
+      setError("Invalid user id.");
       setLoading(false);
       return;
     }
 
     const fetchUser = async () => {
       try {
-        setError("");
-        setLoading(true);
-
-        const res = await fetch(`http://localhost:5050/api/admin/users/${userId}`, {
+        const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
 
         const data = await res.json().catch(() => null);
 
-        if (!res.ok) {
-          throw new Error(data?.message || "Failed to fetch user");
-        }
+        if (!res.ok) throw new Error(data?.message || "Failed to load user");
 
         const fetched: ApiUser = data?.user ?? data;
 
         setUser(fetched);
+
         setFormData({
           fullName: fetched.fullName || "",
           email: fetched.email || "",
@@ -94,19 +84,23 @@ export default function AdminUserEditPage() {
         });
 
         if (fetched.image) setImagePreview(resolveImageUrl(fetched.image));
-      } catch (e: any) {
-        setError(e?.message || "Something went wrong");
-        setUser(null);
+      } catch (err: any) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
-  }, [userId]);
+    if (userId && token) fetchUser();
+  }, [userId, token]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,58 +116,43 @@ export default function AdminUserEditPage() {
 
   const previewUrl = resolveImageUrl(imagePreview);
 
-  // ✅ Submit PUT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?._id) return;
-
-    const token = Cookies.get("token");
-    if (!token) {
-      setError("No token found. Please login again.");
-      return;
-    }
+    if (!user) return;
 
     try {
       setSubmitting(true);
       setError("");
 
-      // ✅ This is correct
-      const formDataPayload = new FormData();
+      const formPayload = new FormData();
 
-      formDataPayload.append("fullName", formData.fullName);
-      formDataPayload.append("email", formData.email);
-      formDataPayload.append("role", formData.role);
+      formPayload.append("fullName", formData.fullName);
+      formPayload.append("email", formData.email);
+      formPayload.append("role", formData.role);
 
       if (formData.password.trim()) {
-        formDataPayload.append("password", formData.password.trim());
+        formPayload.append("password", formData.password.trim());
       }
 
       if (imageFile) {
-        formDataPayload.append("image", imageFile); // ✅ Perfect - matches backend
+        formPayload.append("image", imageFile);
       }
 
-      const res = await fetch(
-        `http://localhost:5050/api/admin/users/${user._id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`, // ✅ Correct - NO Content-Type
-          },
-          body: formDataPayload, // ✅ Correct
-        }
-      );
+      const res = await fetch(`${API_BASE}/api/admin/users/${user._id}`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formPayload,
+      });
 
       const data = await res.json();
 
-      if (!res.ok || !data?.success) {
+      if (!res.ok || !data?.success)
         throw new Error(data?.message || "Update failed");
-      }
 
-      alert("User updated successfully!");
       router.push(`/admin/users/${user._id}`);
       router.refresh();
-    } catch (e: any) {
-      setError(e?.message || "Update failed");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -181,206 +160,169 @@ export default function AdminUserEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-slate-500">Loading user data...</div>
+      <div className="p-10">
+        <p className="text-sm text-black">Loading user...</p>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <p className="text-slate-800 font-semibold">User not found</p>
-          <p className="text-slate-500 text-sm mt-1">ID: {userId}</p>
-
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-
-          <Link href="/admin/users" className="inline-block mt-4 text-green-600 hover:text-green-700 font-medium">
-            ← Back to Users
-          </Link>
-        </div>
+      <div className="p-10">
+        <p className="text-red-500 text-sm">{error || "User not found"}</p>
+        <Link href="/admin/users" className="text-sm text-zinc-500">
+          ← Back to users
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="p-10 text-black" >
+
       {/* Header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-4">
-            <Link
-              href={`/admin/users/${user._id}`}
-              className="text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              ← Back
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Edit User</h1>
-              <p className="mt-1 text-sm text-slate-600">
-                Update user ID: <span className="font-semibold">{user._id}</span>
-              </p>
+      <div className="flex items-end justify-between mb-8">
+        <div>
+          <p className="text-xs font-medium text-zinc-400 uppercase tracking-widest mb-1">
+            People
+          </p>
+          <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">
+            Edit User
+          </h1>
+        </div>
+
+        <Link
+          href={`/admin/users/${user._id}`}
+          className="text-sm text-zinc-500 hover:text-zinc-900"
+        >
+          ← Cancel
+        </Link>
+      </div>
+
+      {/* Form Card */}
+      <div className="bg-white border border-zinc-100 rounded-2xl p-8 max-w-3xl">
+
+        {error && (
+          <div className="mb-6 text-sm text-red-500">{error}</div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">
+              Profile Image
+            </label>
+
+            <div className="flex items-center gap-6">
+
+              <div className="w-20 h-20 rounded-full bg-zinc-100 flex items-center justify-center overflow-hidden">
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-lg font-semibold text-zinc-500">
+                    {formData.fullName?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="text-sm"
+              />
+
             </div>
           </div>
 
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-        </div>
-      </div>
+          {/* Full Name */}
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">
+              Full Name
+            </label>
+            <input
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400"
+            />
+          </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Image Upload (UI only for now) */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Profile Image</label>
-              <div className="flex items-center space-x-6">
-                <div className="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
-                  {previewUrl ? (
-                    <img
-                      src={previewUrl}
-                      alt="Preview"
-                      className="h-full w-full object-cover object-center rounded-full"
-                    />
-                  ) : (
-                    <span className="text-3xl font-bold text-slate-400">
-                      {(formData.fullName || "U").charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400"
+            />
+          </div>
 
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="block w-full text-sm text-slate-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-lg file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-green-50 file:text-green-700
-                      hover:file:bg-green-100
-                      file:cursor-pointer cursor-pointer"
-                  />
-                  <p className="mt-1 text-xs text-slate-500">PNG, JPG up to 5MB</p>
-                  {imageFile && (
-                    <p className="mt-1 text-xs text-slate-600">
-                      Selected: <span className="font-medium">{imageFile.name}</span>
-                    </p>
-                  )}
-                  <p className="mt-2 text-xs text-slate-500">
-                    (Later we’ll upload this to backend with FormData)
-                  </p>
-                </div>
-              </div>
-            </div>
+          {/* Role */}
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">
+              Role
+            </label>
 
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-semibold text-slate-700 mb-2">
-                Full Name
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              />
-            </div>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              />
-            </div>
+          </div>
 
-            {/* Role */}
-            <div>
-              <label htmlFor="role" className="block text-sm font-semibold text-slate-700 mb-2">
-                Role
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-              <p className="mt-1 text-xs text-slate-500">
-                If backend doesn’t allow role update yet, it will show an error (that’s okay for now).
-              </p>
-            </div>
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 uppercase mb-2">
+              New Password
+            </label>
 
-            {/* Password (optional) */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-2">
-                New Password (optional)
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Leave blank to keep current"
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg
-                         focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                Your backend currently doesn’t support password update in EditUserDTO. We can add it later safely.
-              </p>
-            </div>
+            <input
+              name="password"
+              type="password"
+              placeholder="Leave blank to keep current password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400"
+            />
+          </div>
 
-            {/* Buttons */}
-            <div className="flex items-center justify-end space-x-4 pt-4">
-              <Link
-                href={`/admin/users/${user._id}`}
-                className="px-6 py-3 bg-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-300 transition-colors"
-              >
-                Cancel
-              </Link>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Updating..." : "Update User"}
-              </button>
-            </div>
+          {/* Submit */}
+          <div className="flex justify-end gap-3 pt-4">
 
-            <p className="text-xs text-slate-500">
-              Uses real backend: PUT <code>/api/admin/users/:id</code>
-            </p>
-          </form>
-        </div>
+            <Link
+              href={`/admin/users/${user._id}`}
+              className="px-5 py-2 text-sm border border-zinc-200 rounded-xl hover:bg-zinc-50"
+            >
+              Cancel
+            </Link>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-5 py-2 text-sm bg-zinc-900 text-white rounded-xl hover:bg-zinc-700 disabled:opacity-50"
+            >
+              {submitting ? "Updating..." : "Update User"}
+            </button>
+
+          </div>
+
+        </form>
       </div>
     </div>
   );

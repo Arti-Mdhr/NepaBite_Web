@@ -12,7 +12,9 @@ type CartItem = {
 
 export default function CartPage() {
   const router = useRouter();
+
   const [items, setItems] = useState<CartItem[]>([]);
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
   const fetchCart = async () => {
@@ -41,6 +43,13 @@ export default function CartPage() {
     fetchCart();
   }, []);
 
+  const toggleCheck = (name: string) => {
+    setCheckedItems((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+  };
+
   const removeItem = async (name: string) => {
     try {
       await apiFetch(`/api/cart/${encodeURIComponent(name)}`, {
@@ -54,42 +63,109 @@ export default function CartPage() {
     }
   };
 
+  const clearCart = async () => {
+    try {
+      for (const item of items) {
+        await apiFetch(`/api/cart/${encodeURIComponent(item.name)}`, {
+          method: "DELETE",
+          auth: true,
+        });
+      }
+
+      setItems([]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-8 py-10">
-        <h1 className="text-3xl font-bold text-gray-900">Cart</h1>
+    <div className="min-h-screen bg-white">
+
+      <div className="max-w-4xl mx-auto px-6 py-12">
+
+        <h1 className="text-3xl font-bold text-black">
+          Ingredient Cart
+        </h1>
 
         {loading ? (
-          <div className="mt-6">Loading...</div>
+          <div className="mt-6 text-gray-600">Loading...</div>
         ) : items.length === 0 ? (
-          <div className="mt-6 text-gray-600">Cart is empty.</div>
-        ) : (
-          <div className="mt-8 bg-white rounded-xl shadow-sm border divide-y">
-            {items.map((item) => (
-              <div
-                key={item.name}
-                className="p-6 flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {item.name}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Quantity: {item.quantity}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => removeItem(item.name)}
-                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+          <div className="mt-6 text-gray-600">
+            Your ingredient cart is empty.
           </div>
+        ) : (
+
+          <>
+            <div className="mt-8 border border-gray-200 rounded-2xl divide-y">
+
+              {items.map((item) => {
+
+                const checked = checkedItems[item.name];
+
+                return (
+                  <div
+                    key={item.name}
+                    className="p-5 flex items-center justify-between"
+                  >
+
+                    <div className="flex items-center gap-4">
+
+                      {/* Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={checked || false}
+                        onChange={() => toggleCheck(item.name)}
+                        className="w-5 h-5 accent-green-600"
+                      />
+
+                      <div>
+                        <p
+                          className={`font-medium ${
+                            checked
+                              ? "line-through text-gray-400"
+                              : "text-black"
+                          }`}
+                        >
+                          {item.name}
+                        </p>
+
+                        <p className="text-sm text-gray-500">
+                          Quantity: {item.quantity}
+                        </p>
+                      </div>
+
+                    </div>
+
+                    {/* Remove single item */}
+                    <button
+                      onClick={() => removeItem(item.name)}
+                      className="text-sm text-red-500 hover:underline"
+                    >
+                      Remove
+                    </button>
+
+                  </div>
+                );
+              })}
+
+            </div>
+
+            {/* CLEAR CART BUTTON */}
+            <div className="mt-8 flex justify-end">
+
+              <button
+                onClick={clearCart}
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+              >
+                Clear Cart
+              </button>
+
+            </div>
+          </>
         )}
+
       </div>
+
     </div>
   );
 }

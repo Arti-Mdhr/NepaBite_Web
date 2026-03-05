@@ -50,6 +50,11 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     throw new Error(data?.message || "Request failed");
   }
 
+  if (!res.ok) {
+  console.error("API Error:", res.status, data); // ← add this line
+  throw new Error(data?.message || "Request failed");
+}
+
   return data as T;
 }
 
