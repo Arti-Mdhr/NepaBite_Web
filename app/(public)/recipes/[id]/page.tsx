@@ -263,14 +263,15 @@ export default function RecipeDetailPage() {
             <button
               onClick={async () => {
                 try {
-                  await apiFetch(`/api/recipes/review${recipe._id}`, {
-                    method: "POST",
-                    auth: true,
-                    body: JSON.stringify({
-                      rating,
-                      comment,
-                    }),
-                  });
+                  await apiFetch(`/api/recipes/review`, {
+  method: "POST",
+  auth: true,
+  body: JSON.stringify({
+    recipeId: recipe._id,
+    rating,
+    comment,
+  }),
+});
 
                   setComment("");
                   fetchRecipe();

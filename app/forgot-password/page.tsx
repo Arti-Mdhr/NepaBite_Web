@@ -1,70 +1,44 @@
-"use client";
-
 import { useState } from "react";
 
-export default function ForgotPasswordPage() {
-
+export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = async (e:any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setMessage(""); setError("");
 
-    try {
+    const res = await fetch("http://localhost:5000/api/users/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
 
-      const res = await fetch("http://localhost:5050/api/auth/forgot-password",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body: JSON.stringify({ email })
-      });
-
-      const data = await res.json();
-
-      setMessage(data.message || "Reset email sent");
-
-    } catch (error) {
-      setMessage("Something went wrong");
-    }
-
+    const data = await res.json();
+    setLoading(false);
+    if (res.ok) setMessage(data.message);
+    else setError(data.message);
   };
 
   return (
-
-    <div className="min-h-screen flex items-center justify-center bg-white">
-
-      <form onSubmit={submit} className="bg-white p-8 shadow-md rounded-xl w-96">
-
-        <h1 className="text-2xl font-bold mb-4">
-          Forgot Password
-        </h1>
-
+    <div style={{ maxWidth: 400, margin: "80px auto", padding: 24 }}>
+      <h2>Forgot Password</h2>
+      <p>Enter your email and we'll send you a reset link.</p>
+      <form onSubmit={handleSubmit}>
         <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e)=>setEmail(e.target.value)}
-          className="border p-3 w-full rounded-lg mb-4"
+          type="email" placeholder="your@email.com" value={email}
+          onChange={(e) => setEmail(e.target.value)} required
+          style={{ width: "100%", padding: 10, marginBottom: 12 }}
         />
-
-        <button
-          type="submit"
-          className="bg-red-500 text-white w-full p-3 rounded-lg"
-        >
-          Send Reset Link
+        <button type="submit" disabled={loading} style={{ width: "100%", padding: 10 }}>
+          {loading ? "Sending..." : "Send Reset Link"}
         </button>
-
-        {message && (
-          <p className="mt-4 text-sm text-green-600">
-            {message}
-          </p>
-        )}
-
       </form>
-
+      {message && <p style={{ color: "green", marginTop: 12 }}>{message}</p>}
+      {error && <p style={{ color: "red", marginTop: 12 }}>{error}</p>}
     </div>
-
   );
-
 }
