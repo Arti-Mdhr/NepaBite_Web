@@ -17,6 +17,7 @@ type Review = {
   rating: number;
   comment: string;
   createdAt: string;
+
 };
 
 type Recipe = {
@@ -290,65 +291,90 @@ export default function RecipeDetailPage() {
 
         {/* REVIEWS */}
 
-        <div className="mt-16">
+<div className="mt-16">
 
-          <h2 className="text-3xl font-bold">
-            Reviews ({recipe.reviews?.length || 0})
-          </h2>
+  <h2 className="text-3xl font-bold">
+    Reviews ({recipe.reviews?.length || 0})
+  </h2>
 
-          <div className="mt-6 space-y-4">
+  <div className="mt-6 space-y-4">
 
-            {recipe.reviews?.map((review) => (
+    {recipe.reviews?.map((review) => (
 
-              <div
-                key={review._id}
-                className="border border-gray-200 rounded-xl p-5"
-              >
+      <div
+        key={review._id}
+        className="border border-gray-200 rounded-xl p-5"
+      >
 
-                <div className="flex justify-between">
+        {/* REVIEW HEADER */}
+        <div className="flex justify-between items-start">
 
-                  <span className="font-semibold text-yellow-600">
-                    ⭐ {review.rating}
-                  </span>
+          <div>
 
-                  {(currentUserId === review.userId ||
-                    currentRole === "admin") && (
+          
 
-                    <button
-                      onClick={async () => {
-                        try {
-                          await apiFetch(
-                            `/api/recipes/review/${recipe._id}/${review._id}`,
-                            {
-                              method: "DELETE",
-                              auth: true,
-                            }
-                          );
-                          fetchRecipe();
-                        } catch {}
-                      }}
-                      className="text-red-500 text-sm"
-                    >
-                      Delete
-                    </button>
+            {/* ⭐ RATING */}
+            <span className="text-yellow-600">
+              ⭐ {review.rating}
+            </span>
 
-                  )}
+          </div>
 
-                </div>
+          {/* DELETE BUTTON */}
+          {(currentUserId === review.userId ||
+            currentRole === "admin") && (
 
-                <p className="mt-2 text-gray-600">
-                  {review.comment}
-                </p>
+            <button
+              onClick={async () => {
+                try {
+                  await apiFetch(
+                    `/api/recipes/review/${recipe._id}/${review._id}`,
+                    {
+                      method: "DELETE",
+                      auth: true,
+                    }
+                  );
 
-              </div>
+                  fetchRecipe();
 
-            ))}
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              className="text-red-500 text-sm"
+            >
+              Delete
+            </button>
+
+          )}
+
+        </div>
+
+        {/* COMMENT */}
+        <p className="mt-3 text-gray-600">
+          {review.comment}
+        </p>
+
+        {/* DATE */}
+        <p className="text-xs text-gray-400 mt-2">
+          {new Date(review.createdAt).toLocaleDateString()}
+        </p>
+
+      </div>
+
+    ))}
+
+  </div>
+
+</div>
+
+          
 
           </div>
 
         </div>
 
-      </div>
-    </div>
+      
+    
   );
 }
