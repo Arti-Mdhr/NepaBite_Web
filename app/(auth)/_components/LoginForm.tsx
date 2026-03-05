@@ -20,33 +20,36 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      // Call your backend login API
-      const res = await fetch("http://localhost:5050/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+const onSubmit = async (data: LoginFormData) => {
+  try {
+    const res = await fetch("http://localhost:5050/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-      const result = await res.json();
+    const result = await res.json();
 
-      if (!res.ok) {
-        throw new Error(result.message || "Login failed");
-      }
-
-      // Save JWT and username in cookies
-      Cookies.set("token", result.token, { expires: 1, path: "/" }); // expires in 1 day
-      Cookies.set("username", result.user.fullName, { expires: 1, path: "/" });
-
-      // Redirect to dashboard
-      router.push("/auth/dashboard");
-    } catch (error: any) {
-      console.error("Login error:", error.message);
+    if (!res.ok) {
+      throw new Error(result.message || "Login failed");
     }
-  };
+
+    // SAVE TOKEN
+    Cookies.set("token", result.token, { expires: 1 });
+
+    // SAVE USER DATA
+    Cookies.set("username", result.user.fullName);
+    Cookies.set("role", result.user.role);
+    Cookies.set("userId", result.user._id);
+
+    // Redirect to dashboard
+    router.push("/dashboard");
+
+  } catch (error: any) {
+    console.error(error.message);
+  }
+};
+
 
   return (
     <div className="flex w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -83,6 +86,22 @@ export default function LoginForm() {
             <p className="text-red-500 text-sm">{errors.password.message}</p>
           )}
 
+          <input
+  type="password"
+  {...register("password")}
+  placeholder="Password"
+  className="w-full px-4 py-3 border rounded-lg text-black placeholder-black"
+/>
+
+<div className="flex justify-end mb-4">
+  <a
+    href="/forgot-password"
+    className="text-sm text-red-500 hover:underline"
+  >
+    Forgot Password?
+  </a>
+</div>
+
           {/* Submit */}
           <button
             type="submit"
@@ -93,6 +112,8 @@ export default function LoginForm() {
 
           <p className="text-center text-sm text-black">
             Don’t have an account?{" "}
+
+            
             <span
               className="text-green-600 cursor-pointer"
               onClick={() => router.push("/register")}

@@ -117,23 +117,30 @@ export default function AdminRecipesPage() {
                           : "—"}
                       </td>
 
-<td className="p-4 text-right space-x-4">
+                      <td className="p-4 text-right space-x-4">
+                        {/* ✅ FIXED: View now goes to admin route */}
+                        <Link
+                          href={`/admin/recipes/${r._id}`}
+                          className="text-green-600 hover:underline"
+                        >
+                          View
+                        </Link>
 
-  <Link
-    href={`/admin/recipes/edit/${r._id}`}
-    className="text-blue-600 hover:underline"
-  >
-    Edit
-  </Link>
+                        {/* ✅ Correct edit route */}
+                        <Link
+                          href={`/admin/recipes/edit/${r._id}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          Edit
+                        </Link>
 
-  <button
-    onClick={() => handleDelete(r._id)}
-    className="text-red-600 hover:underline"
-  >
-    Delete
-  </button>
-
-</td>
+                        <button
+                          onClick={() => handleDelete(r._id)}
+                          className="text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

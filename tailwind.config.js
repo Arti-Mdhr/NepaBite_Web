@@ -5,12 +5,12 @@ const config = {
     "./components/**/*.{ts,tsx,js,jsx,mdx}",
   ],
   theme: {
-    extend: {
-      colors: {
-        brandOrange: "#FF7F50",
-        brandRed: "#FF0000",
-        cardBg: "#FFF6ED",
-        inputBg: "#F3E8EE",
+  extend: {
+    colors: {
+      primary: "#E63946",
+      accent: "#F4A261",
+      fresh: "#2A9D8F",
+      bgsoft: "#FFF8F2",
       },
     },
   },

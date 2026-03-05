@@ -1,65 +1,78 @@
 "use client";
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { clearAuthCookies, getAuthToken, getUserData } from "@/lib/cookies";
+
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+
+type Role = "admin" | "user";
+
+interface AuthUser {
+  id?: string;
+  fullName?: string;
+  email?: string;
+  role?: Role;
+}
 
 interface AuthContextProps {
-    isAuthenticated: boolean;
-    setIsAuthenticated: (value: boolean) => void;
-    user: any;
-    setUser: (user: any) => void;
-    logout: () => Promise<void>;
-    loading: boolean;
-    checkAuth: () => Promise<void>;
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  role: Role | null;
+  loading: boolean;
+  setUser: (u: AuthUser | null) => void;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-    const checkAuth = async () => {
-        try {
-            const token = await getAuthToken();
-            const user = await getUserData();
-            setUser(user);
-            setIsAuthenticated(!!token);
-        } catch (err) {
-            setIsAuthenticated(false);
-            setUser(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
 
-    useEffect(() => {
-        checkAuth();
-    }, []);
+  useEffect(() => {
+    const token = Cookies.get("token");
+    const cookieRole = (Cookies.get("role") || "") as Role;
+    const userId = Cookies.get("userId");
+    const username = Cookies.get("username");
 
-    const logout = async () => {
-        try {
-            await clearAuthCookies();
-            setIsAuthenticated(false);
-            setUser(null);
-            router.push("/login");
-        } catch (error) {
-            console.error("Logout failed:", error);
-        }
+    if (token) {
+      setIsAuthenticated(true);
+      setRole(cookieRole || "user");
+      setUser({
+        id: userId || undefined,
+        fullName: username || undefined,
+        role: cookieRole || "user",
+      });
     }
 
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser, logout, loading, checkAuth }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    setLoading(false);
+  }, []);
+
+  const logout = () => {
+    Cookies.remove("token");
+    Cookies.remove("role");
+    Cookies.remove("userId");
+    Cookies.remove("username");
+
+    setIsAuthenticated(false);
+    setRole(null);
+    setUser(null);
+
+    router.push("/login");
+  };
+
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, role, loading, setUser, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
+
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 };
